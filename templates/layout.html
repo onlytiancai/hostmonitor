@@ -1,0 +1,16 @@
+$def with (content)
+<html lang="zh-cn">
+    <head>
+        <meta charset="utf-8">
+        <title>主机监控</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        $if content.auto_refresh:
+            <meta http-equiv="refresh" content="$content.auto_refresh" />
+        <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.css" rel="stylesheet">
+        <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.js"></script>
+        <script src="http://libs.baidu.com/jquery/1.8.2/jquery.js"></script>
+    </head>
+    <body>
+    $:content
+    </body>
+</html>

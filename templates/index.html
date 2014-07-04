@@ -1,0 +1,72 @@
+$def with(hosts1, hosts2, hosts3)
+
+$var auto_refresh: 5 
+
+$code:
+    def disk_use_filter(metric):
+        if not metric.name.startswith('disk_use:'):
+            return False
+        if metric.name.endswith('/dev'):
+            return False
+        if metric.name.endswith('/dev/shm'):
+            return False
+        if metric.name.endswith('/var/run'):
+            return False
+        if metric.name.endswith('/var/lock'):
+            return False
+        return True
+
+$def table_render(hosts):
+    <table class="table">
+        <tr>
+            <td>主机</td>
+            <td>load</td>
+            <td>磁盘利用</td>
+            <td>内存/swap</td>
+        </tr>
+    $for host in hosts:
+        <tr>
+        <td>$host.host</td>
+            <td>
+            $for metric in filter(lambda x: x.name.startswith('load_'), host.metrics):
+                $ label_class = 'label-warning' if metric.value > 5 else 'label-default'
+                <span title="$metric.name, $metric.time" class="label $label_class">$metric.value</span>
+            </td>
+            <td>
+            $for metric in filter(disk_use_filter, host.metrics):
+                $ label_class = 'label-warning' if metric.value > 90 else 'label-default'
+                <span  title="$metric.name, $metric.time" class="label $label_class">$metric.value%</span>
+            </td>
+            <td>
+                $ mem_use = filter(lambda x: x.name.startswith('mem_use'), host.metrics)
+                $ swap_use = filter(lambda x: x.name.startswith('swap_use'), host.metrics)
+                $if mem_use:
+                    $ label_class = 'label-warning' if mem_use[0].value > 90 else 'label-default'
+                    <span  title="$mem_use[0].name, $mem_use[0].time" class="label $label_class">$mem_use[0].value%</span>
+                $if swap_use:
+                    $ label_class = 'label-warning' if swap_use[0].value > 80 else 'label-default'
+                    <span  title="$swap_use[0].name, $swap_use[0].time" class="label $label_class">$swap_use[0].value%</span>
+            </td>
+        </tr>
+    </table>
+
+<div style="padding:10px">
+    <h3>各主机概况</h3>
+    <p>请执行该条语句上报数据(安全无毒): <code>bash <(curl http://hostmonitor.ihuhao.com/static/collect.sh -s) youremail@gmail.com</code></p>
+    <pre>mkdir -p ~/scripts
+wget http://hostmonitor.ihuhao.com/static/collect.sh -O ~/scripts/collect.sh
+crontab -e # 在末尾追加如下语句
+
+*/5 * * * * bash ~/scripts/collect.sh onlytiancai@gmail.com >/var/log/collect.log 2>&1</pre>
+    <div class="row">
+        <div class="col-md-4">
+            $:table_render(hosts1)
+        </div>
+        <div class="col-md-4">
+            $:table_render(hosts2)
+        </div>
+        <div class="col-md-4">
+            $:table_render(hosts3)
+        </div>
+    </div>
+</div>
