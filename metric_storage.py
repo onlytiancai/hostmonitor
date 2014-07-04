@@ -7,19 +7,19 @@ import web
 
 import info_parser
 
-hosts = set()
+hosts = defaultdict(set) 
 collect_datas = {}
-max_metric_list = 100
+max_metric_list = 10
 
-def add_host(host):
-    hosts.add(host)
+def add_host(email, mac_addr, hostname, ip):
+    hosts[email].add((mac_addr, hostname, ip))
 
 
-def add_metric_data(host, name, value):
-    if host not in collect_datas:
-        collect_datas[host] = defaultdict(list)
+def add_metric_data(mac_addr, name, value):
+    if mac_addr not in collect_datas:
+        collect_datas[mac_addr] = defaultdict(list)
 
-    storage = collect_datas[host]
+    storage = collect_datas[mac_addr]
 
     if len(storage[name]) >= max_metric_list:
         storage[name].pop(0)
@@ -27,8 +27,8 @@ def add_metric_data(host, name, value):
     storage[name].append(metric_value)
 
 
-def get_lastest_metrics(host):
-    storage = collect_datas.get(host, {})
+def get_lastest_metrics(mac_addr):
+    storage = collect_datas.get(mac_addr, {})
     ret = []
     for name in storage:
         x = storage[name]
@@ -40,17 +40,18 @@ def get_lastest_metrics(host):
 
 
 def process_data(clientip, data):
-    add_host(clientip)
+    mac_addr = data.mac_addr
+    add_host(data.email, mac_addr, data.hostname, clientip)
 
     info = info_parser.parse_uptime_info(data.uptime_info)
     for name in info:
-        add_metric_data(clientip, name, info[name])
+        add_metric_data(mac_addr, name, info[name])
 
     info = info_parser.parse_df_info(data.df_info)
     for name in info:
-        add_metric_data(clientip, name, info[name])
+        add_metric_data(mac_addr, name, info[name])
 
     info = info_parser.parse_free_info(data.free_info)
     for name in info:
-        add_metric_data(clientip, name, info[name])
+        add_metric_data(mac_addr, name, info[name])
 

@@ -4,7 +4,7 @@ $def with (content)
         <meta charset="utf-8">
         <title>主机监控</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        $if content.auto_refresh:
+        $if content.get('auto_refresh'):
             <meta http-equiv="refresh" content="$content.auto_refresh" />
         <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.css" rel="stylesheet">
         <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.js"></script>
