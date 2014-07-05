@@ -1,6 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
+import logging
 
+redis_conn_args = dict(host='localhost', port=6379, db=0) 
+
+logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.log'), level = logging.DEBUG)
 
 def reload_config():
     try:

@@ -1,6 +1,6 @@
 $def with(email, hosts1, hosts2, hosts3)
 
-$var auto_refresh: 5 
+$var auto_refresh: 60 
 
 $code:
     def disk_use_filter(metric):
@@ -17,7 +17,7 @@ $code:
         return True
 
 $def table_render(hosts):
-    <table class="table">
+    <table class="table metric_table">
         <tr>
             <td>主机</td>
             <td>load</td>
@@ -35,7 +35,7 @@ $def table_render(hosts):
             <td>
             $for metric in filter(disk_use_filter, host.metrics):
                 $ label_class = 'label-warning' if metric.value > 90 else 'label-default'
-                <span  title="$metric.name, $metric.time" class="label $label_class">$metric.value%</span>
+                <span title="$metric.name, $metric.time" class="label $label_class">$metric.value%</span>
             </td>
             <td>
                 $ mem_use = filter(lambda x: x.name.startswith('mem_use'), host.metrics)
@@ -49,7 +49,11 @@ $def table_render(hosts):
             </td>
         </tr>
     </table>
-
+<style>
+.metric_table td .label{
+    line-height: 2;
+}
+</style>
 <ol class="breadcrumb">
     <li><a href="/">首页</a></li>
     <li><a href="/?email=$email">上报数据</a></li>

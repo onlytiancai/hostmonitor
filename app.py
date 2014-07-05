@@ -8,7 +8,7 @@ import config
 import utils
 import metric_storage 
 
-render = web.template.render('templates', base='layout')
+render = web.template.render('templates', base='layout', cache=False)
 
 class IndexHandler(object):
     def GET(self):

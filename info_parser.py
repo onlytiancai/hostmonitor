@@ -20,7 +20,7 @@ def parse_uptime_info(txt):
         ret.load_15 = float(arr[2])
         return ret
     except:
-        logging.error('parse_uptime_info error:%s', txt)
+        logging.exception('parse_uptime_info error:%s', txt)
         return web.storage(load_1=-1, load_5=-1, load_15=-1)
 
 
@@ -31,15 +31,17 @@ def parse_free_info(txt):
 
         line = filter(lambda x: x.find('Mem:') != -1, lines)[0]
         arr = [x.strip() for x in re.split(r'\W*', line)]
-        ret.mem_used = round(float(arr[2]) * 100 / float(arr[1]), 2)
+        total = float(arr[1])
+        ret.mem_used = round(float(arr[2]) * 100 / total, 2) if total else 0
 
         line = filter(lambda x: x.find('Swap:') != -1, lines)[0]
         arr = [x.strip() for x in re.split(r'\W*', line)]
-        ret.swap_used = round(float(arr[2]) * 100 / float(arr[1]), 2)
+        total = float(arr[1])
+        ret.swap_used = round(float(arr[2]) * 100 / total, 2) if total else 0
 
         return ret
     except:
-        logging.error('parse_free_info error:%s', txt)
+        logging.exception('parse_free_info error:%s', txt)
         return web.storage(mem_used=-1, swap_used=-1)
 
 
@@ -54,7 +56,7 @@ def parse_df_info(txt):
 
         return ret
     except:
-        logging.error('parse_df_info error:%s', txt)
+        logging.exception('parse_df_info error:%s', txt)
         return web.storage({"disk_use:/": -1})
 
 
