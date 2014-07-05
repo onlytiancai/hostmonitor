@@ -2,56 +2,50 @@
 # -*- coding: utf-8 -*-
 
 import time
-from collections import defaultdict
 import redis
 import web
 
-import config 
+import config
 import info_parser
 
 r = redis.Redis(**config.redis_conn_args)
+prefix = config.key_prefix
 
-hosts = defaultdict(set) 
-collect_datas = {}
-max_metric_list = 10
 
 def add_host(email, mac_addr, hostname, ip):
-    hosts[email].add((mac_addr, hostname, ip))
+    key = '%s.%s' % (prefix, email)
+    r.sadd(key, repr((mac_addr, hostname, ip)))
 
 
 def get_hosts(email):
-    return list(hosts[email])
+    key = '%s.%s' % (prefix, email)
+    return [eval(x) for x in r.smembers(key)]
 
 
 def clear_hosts(email):
-    if email in hosts:
-        del hosts[email]
+    key = '%s.%s' % (prefix, email)
+    r.delete(key)
 
 
 def add_metric_data(mac_addr, name, value):
-    if mac_addr not in collect_datas:
-        collect_datas[mac_addr] = defaultdict(list)
-
-    storage = collect_datas[mac_addr]
-
-    if len(storage[name]) >= max_metric_list:
-        storage[name].pop(0)
+    key = '%s.%s' % (prefix, mac_addr)
     metric_value = [int(time.time()), float(value)]
-    storage[name].append(metric_value)
+    r.hset(key, name, repr(metric_value))
 
 
 def clear_metrics(mac_addr):
-    if mac_addr in collect_datas:
-        del collect_datas[mac_addr]
+    key = '%s.%s' % (prefix, mac_addr)
+    r.delete(key)
 
 
 def get_lastest_metrics(mac_addr):
-    storage = collect_datas.get(mac_addr, {})
+    key = '%s.%s' % (prefix, mac_addr)
+    storage = dict(r.hgetall(key))
     ret = []
     for name in storage:
-        x = storage[name]
-        metric_time = x[-1][0] if x else 0
-        metric_value = x[-1][1] if x else 0
+        x = eval(storage[name])
+        metric_time = x[0] if x else 0
+        metric_value = x[1] if x else 0
         metric_time = time.strftime("%H:%M:%S", time.localtime(float(metric_time)))
         ret.append(web.storage(name=name, time=metric_time, value=metric_value))
     return sorted(ret, key=lambda x: x.name)
@@ -73,6 +67,7 @@ def process_data(clientip, data):
     for name in info:
         add_metric_data(mac_addr, name, info[name])
 
+
 def test_default():
     import mock
     from nose.tools import assert_equal
@@ -87,7 +82,7 @@ def test_default():
     clear_metrics('00:00:00:00')
 
     data = web.storage(mac_addr='00:00:00:00', email='test@test.com',
-                       hostname='host1', uptime_info='', df_info='', 
+                       hostname='host1', uptime_info='', df_info='',
                        free_info='')
     process_data(clientip, data)
     hosts = get_hosts('test@test.com')

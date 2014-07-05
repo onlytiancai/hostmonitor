@@ -4,9 +4,8 @@
 
 import web
 
-import config
 import utils
-import metric_storage 
+import metric_storage
 
 render = web.template.render('templates', base='layout', cache=False)
 
@@ -22,7 +21,7 @@ class DashboardHandler(object):
         data = web.input(email='onlytiancai@gmail.com')
         email = data.email
         hosts1, hosts2, hosts3 = [], [], []
-        hosts = metric_storage.hosts.get(email, [])
+        hosts = metric_storage.get_hosts(email)
         for i, host in enumerate(hosts):
             mac_addr = host[0]
             metrics = metric_storage.get_lastest_metrics(mac_addr)
@@ -46,7 +45,7 @@ class CollectHandler(object):
         ret = 'ip=%s\n' % clientip
         metrics = metric_storage.get_lastest_metrics(data.mac_addr)
         ret += '\n'.join('%s=%s' % (metric.name, metric.value) for metric in metrics)
-        ret += '\nmac_addr=%s\n' % data.mac_addr 
+        ret += '\nmac_addr=%s\n' % data.mac_addr
         ret += 'email=%s\n' % data.email
         ret += 'hostname=%s\n' % data.hostname
         ret += '\n'
@@ -62,4 +61,4 @@ app = web.application(urls, globals())
 wsgiapp = app.wsgifunc()
 
 if __name__ == '__main__':
-    app.run() 
+    app.run()

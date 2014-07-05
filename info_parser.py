@@ -50,7 +50,7 @@ def parse_df_info(txt):
         ret = web.storage()
         lines = [x for x in txt.splitlines() if x.find('%') != -1]
 
-        for line in lines[1:]: # 去掉表头
+        for line in lines[1:]:  # 去掉表头
             arr = [x.strip() for x in re.split(r'\s*', line)]
             ret['disk_use:' + arr[-1]] = int(arr[-2].replace('%', ''))
 
@@ -92,4 +92,3 @@ tmpfs                 502M     0  502M   0% /dev/shm
     assert_equal(info['disk_use:/boot'], 28)
     assert_equal(info['disk_use:/dev/shm'], 0)
     assert_equal(info['disk_use:/dnspod'], 3)
-

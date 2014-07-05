@@ -3,9 +3,10 @@
 import os
 import logging
 
-redis_conn_args = dict(host='localhost', port=6379, db=0) 
+redis_conn_args = dict(host='localhost', port=6379, db=0)
+key_prefix = 'hostmonitor'
 
-logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.log'), level = logging.DEBUG)
+logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.log'), level=logging.DEBUG)
 
 def reload_config():
     try:
